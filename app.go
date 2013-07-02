@@ -38,7 +38,6 @@ func (app *App) Listen() {
 	port, err := app.Config.Int(app.Dispatcher.Environ, "port")
 
 	addr := fmt.Sprintf(":%d", 8090)
-
 	err = http.ListenAndServe(addr, nil)
 	if err != nil {
 		fmt.Println("<ListenAndServe> error")
