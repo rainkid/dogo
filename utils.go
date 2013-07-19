@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -36,4 +37,15 @@ func Util_Md5(str string) string {
 	h := md5.New()
 	io.WriteString(h, str)
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func Util_Log(prefix, format string, args ...interface{}) {
+
+	loghd, err := os.OpenFile("test.log", os.O_RDWR|os.O_CREATE, 644)
+	if err != nil {
+		return
+	}
+	defer loghd.Close()
+	logger := log.New(loghd, prefix, log.Ldate|log.Ltime)
+	logger.Fatalf(format, args)
 }

@@ -34,10 +34,8 @@ func (d *Dispatcher) Init() *Dispatcher {
 	d.Controller = "Index"
 	d.Action = "Index"
 
-	environ, err := d.App.Config.String("base", "environ")
-	if err != nil {
-		d.Environ = environ
-	}
+	environ, _ := d.App.Config.String("base", "environ")
+	d.Environ = environ
 	return d
 }
 

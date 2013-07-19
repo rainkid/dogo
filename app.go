@@ -2,8 +2,14 @@ package dogo
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+)
+
+var (
+	Loger    = log.New(os.Stdout, "[dogo] ", log.Ldate|log.Ltime)
+	Register = NewRegister()
 )
 
 type App struct {
@@ -15,7 +21,7 @@ type App struct {
 func NewApp(file string) *App {
 	config, err := NewConfig(file)
 	if err != nil {
-		return nil
+		Loger.Fatal(err.Error())
 	}
 	basepath, _ := os.Getwd()
 	return &App{Config: config, BasePath: basepath}
@@ -37,12 +43,12 @@ func (app *App) Run() {
 func (app *App) Listen() {
 	port, err := app.Config.Int(app.Dispatcher.Environ, "port")
 
-	addr := fmt.Sprintf(":%d", 8090)
+	addr := fmt.Sprintf(":%d", port)
+	Loger.Print("ListerAndServ ", addr)
 	err = http.ListenAndServe(addr, nil)
 	if err != nil {
-		fmt.Println("<ListenAndServe> error")
+		Loger.Fatal("<ListenAndServe> error : ", err.Error())
 	}
-	fmt.Println("listen : 127.0.0.1", port)
 }
 
 //set app default module

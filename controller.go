@@ -38,8 +38,8 @@ func (c *Controller) IsAjax() bool {
 	return c.Context.GetHeader("X-Requested-With") == "XMLHttpRequest"
 }
 
-func (c *Controller) IsPost() {
-
+func (c *Controller) IsPost() bool {
+	return c.GetRequest().Method == "POST"
 }
 
 //Assign value to View engine
@@ -108,13 +108,10 @@ func (c *Controller) Error(err error) {
 	return
 }
 
-func (c *Controller) GetPosts(fields []string) map[string]interface{} {
-	values := make(map[string]interface{})
-	c.GetRequest().ParseForm()
+func (c *Controller) GetPosts(fields []string) map[string]string {
+	values := make(map[string]string)
 	for _, field := range fields {
-		if value, ok := c.GetRequest().PostForm[field]; ok {
-			values[field] = value
-		}
+		values[field] = c.GetPost(field)
 	}
 	return values
 }
@@ -123,17 +120,25 @@ func (c *Controller) GetPost(field string) string {
 	return c.GetRequest().PostFormValue(field)
 }
 
+func (c *Controller) GetPostList(field string) []string {
+	c.GetRequest().ParseForm()
+	return c.GetRequest().PostForm[field]
+}
+
 //get post params
-func (c *Controller) GetInputs(fields []string) map[string]interface{} {
-	values := make(map[string]interface{})
+func (c *Controller) GetInputs(fields []string) map[string]string {
+	values := make(map[string]string)
 	c.GetRequest().ParseForm()
 
 	for _, field := range fields {
-		if value, ok := c.GetRequest().Form[field]; ok {
-			values[field] = value
-		}
+		values[field] = c.GetInput(field)
 	}
 	return values
+}
+
+func (c *Controller) GetInputList(field string) []string {
+	c.GetRequest().ParseForm()
+	return c.GetRequest().Form[field]
 }
 
 func (c *Controller) GetInput(field string) string {

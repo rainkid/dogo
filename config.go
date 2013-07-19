@@ -1,37 +1,49 @@
 package dogo
 
 import (
-	"os"
-	"io"
 	"bufio"
+	"errors"
+	"fmt"
+	"io"
+	"os"
 	"strconv"
 	"strings"
-	"errors"
 )
+
+var configs = make(map[string]*Config)
 
 type Config struct {
 	fileName string
-	data map[string]map[string]string
+	data     map[string]map[string]string
 }
 
 func NewConfig(fileName string) (c *Config, err error) {
-	var file *os.File
 
+	if _, ok := configs[fileName]; ok {
+		return configs[fileName], nil
+	}
+
+	var file *os.File
 	if file, err = os.Open(fileName); err != nil {
+		Loger.Print(err.Error())
 		return nil, err
 	}
 
 	c = &Config{fileName, make(map[string]map[string]string)}
 
 	if err = c.read(bufio.NewReader(file)); err != nil {
+		Loger.Print(err.Error())
 		return nil, err
 	}
 
 	if err = file.Close(); err != nil {
+		Loger.Print(err.Error())
 		return nil, err
 	}
 
-	return c, nil
+	configs[fileName] = c
+
+	return configs[fileName], nil
 }
 
 func (c *Config) AddSection(section string) bool {
@@ -61,12 +73,11 @@ func (c *Config) HasSection(section string) bool {
 	return false
 }
 
-
 func (c *Config) GetOptions(section string) (options []string, err error) {
 	section = strings.ToLower(section)
 
 	if _, ok := c.data[section]; !ok {
-		return nil, errors.New("section not found")
+		return nil, errors.New(fmt.Sprintf("section not found : %s", section))
 	}
 
 	i := 0
@@ -78,7 +89,6 @@ func (c *Config) GetOptions(section string) (options []string, err error) {
 
 	return options, nil
 }
-
 
 func (c *Config) HasOption(section string, option string) bool {
 	section = strings.ToLower(section)
@@ -93,15 +103,14 @@ func (c *Config) HasOption(section string, option string) bool {
 
 func (c *Config) String(section string, option string) (string, error) {
 	if _, ok := c.data[section]; !ok {
-		return "", errors.New("setion not fond")
+		return "", errors.New(fmt.Sprintf("setion not found : %s", section))
 	}
-	
-	if value, ok := c.data[section][option]; ok {		
+
+	if value, ok := c.data[section][option]; ok {
 		return value, nil
 	}
-	return "", errors.New("option not found")
+	return "", errors.New(fmt.Sprintf("option not found : %s", option))
 }
-
 
 func (c *Config) Bool(section string, option string) (bool, error) {
 	value, err := c.String(section, option)
@@ -147,7 +156,7 @@ func (c *Config) read(buf *bufio.Reader) (err error) {
 		} else if err != nil {
 			return err
 		}
-		
+
 		l = strings.TrimSpace(l)
 
 		switch {
@@ -156,14 +165,14 @@ func (c *Config) read(buf *bufio.Reader) (err error) {
 		case len(l) >= 3 && strings.ToLower(l[0:3]) == "rem":
 			continue
 		case l[0] == '[' && l[len(l)-1] == ']':
-			option = "" 
+			option = ""
 			section = strings.TrimSpace(l[1 : len(l)-1])
 			c.AddSection(section)
 		default:
 			i := strings.IndexAny(l, "=:")
 			switch {
 			case i > 0:
-				
+
 				i := strings.IndexAny(l, "=:")
 				option = strings.TrimSpace(l[0:i])
 				value := strings.TrimSpace(stripComments(l[i+1:]))

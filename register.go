@@ -1,19 +1,17 @@
-package dogo 
+package dogo
 
-type Data map[string]interface{}
-
-type Register struct {
-	data Data
+type register struct {
+	data map[string]interface{}
 }
 
-func NewRegister() *Register {
-	return &Register{}
+func NewRegister() *register {
+	return &register{data: make(map[string]interface{})}
 }
 
-func (r *Register) Set(name string, i interface{}) {
-	r.data[name] = i;
+func (r *register) Set(name string, i interface{}) {
+	r.data[name] = i
 }
 
-func (r *Register) Get(name string) interface{}{
+func (r *register) Get(name string) interface{} {
 	return r.data[name]
 }
