@@ -177,7 +177,7 @@ func (c *Controller) DelCookie(name string) *Controller {
 	return c
 }
 
-//set contorller context 
+//set contorller context
 //this action will call by dispatcher
 func (c *Controller) SetContext(w http.ResponseWriter, r *http.Request) *Controller {
 	c.Context = NewContext(w, r)
