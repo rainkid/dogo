@@ -65,9 +65,9 @@ func (c *Controller) Json(code int64, msg string, data interface{}) {
 	c.DisableView = true
 	c.Context.SetHeader("Content-Type", "json")
 	jsonStr, err := json.Marshal(map[string]interface{}{
-		"success": code,
-		"msg":     msg,
-		"data":    data,
+		"code": code,
+		"msg":  msg,
+		"data": data,
 	})
 	if err != nil {
 		c.GetResponse().Write([]byte("json.Marshal faild."))

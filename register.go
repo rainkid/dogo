@@ -15,3 +15,7 @@ func (r *register) Set(name string, i interface{}) {
 func (r *register) Get(name string) interface{} {
 	return r.data[name]
 }
+
+func (r *register) Delete(name string) {
+	delete(r.data, name)
+}
