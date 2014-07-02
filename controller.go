@@ -22,6 +22,7 @@ type Controller struct {
 	TplFuncs    template.FuncMap
 }
 
+//@override on controller construct 
 func (c *Controller) Construct() {
 	d := c.GetDispatcher()
 	c.ViewPath = "src/views"
@@ -30,14 +31,17 @@ func (c *Controller) Construct() {
 	return
 }
 
+//@override on controller destruct 
 func (c *Controller) Destruct() {
 	return
 }
 
+//is get request
 func (c *Controller) IsAjax() bool {
 	return c.Context.GetHeader("X-Requested-With") == "XMLHttpRequest"
 }
 
+//is post request
 func (c *Controller) IsPost() bool {
 	return c.GetRequest().Method == "POST"
 }
@@ -60,7 +64,7 @@ func (c *Controller) Layout(file string) bool {
 	}
 	return false
 }
-
+//output json string
 func (c *Controller) Json(code int64, msg string, data interface{}) {
 	c.DisableView = true
 	c.Context.SetHeader("Content-Type", "json")
@@ -108,6 +112,7 @@ func (c *Controller) Error(err error) {
 	return
 }
 
+//get all post params that in fields
 func (c *Controller) GetPosts(fields []string) map[string]string {
 	values := make(map[string]string)
 	for _, field := range fields {
@@ -116,10 +121,12 @@ func (c *Controller) GetPosts(fields []string) map[string]string {
 	return values
 }
 
+//get an post param 
 func (c *Controller) GetPost(field string) string {
 	return c.GetRequest().PostFormValue(field)
 }
 
+//get post array string
 func (c *Controller) GetPostList(field string) []string {
 	c.GetRequest().ParseForm()
 	return c.GetRequest().PostForm[field]
