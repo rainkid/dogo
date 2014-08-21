@@ -22,7 +22,7 @@ type Controller struct {
 	TplFuncs    template.FuncMap
 }
 
-//@override on controller construct 
+//@override on controller construct
 func (c *Controller) Construct() {
 	d := c.GetDispatcher()
 	c.ViewPath = "src/views"
@@ -31,7 +31,7 @@ func (c *Controller) Construct() {
 	return
 }
 
-//@override on controller destruct 
+//@override on controller destruct
 func (c *Controller) Destruct() {
 	return
 }
@@ -64,6 +64,7 @@ func (c *Controller) Layout(file string) bool {
 	}
 	return false
 }
+
 //output json string
 func (c *Controller) Json(code int64, msg string, data interface{}) {
 	c.DisableView = true
@@ -121,7 +122,7 @@ func (c *Controller) GetPosts(fields []string) map[string]string {
 	return values
 }
 
-//get an post param 
+//get an post param
 func (c *Controller) GetPost(field string) string {
 	return c.GetRequest().PostFormValue(field)
 }
@@ -155,7 +156,7 @@ func (c *Controller) GetInput(field string) string {
 //redirct to url
 func (c *Controller) Redirect(urlStr string, params map[string]string) {
 	w, r := c.GetResponse(), c.GetRequest()
-	http.Redirect(w, r, urlStr, http.StatusFound)
+	http.Redirect(w, r, urlStr, http.StatusSeeOther)
 	return
 }
 

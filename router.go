@@ -11,7 +11,7 @@ func NewRouter() *Router {
 	return &Router{}
 }
 
-//add sample route
+//add sample route to routers
 func (router *Router) AddSampleRoute(module string, c interface{}) *Router {
 	sample := NewSampleRoute(module, c)
 	router.SampleRoutes = append(router.SampleRoutes, sample)
