@@ -155,9 +155,10 @@ func (c *Controller) GetInput(field string) string {
 
 //redirct to url
 func (c *Controller) Redirect(urlStr string, params map[string]string) {
-	w, r := c.GetResponse(), c.GetRequest()
-	fmt.Println(http.StatusSeeOther)
-	http.Redirect(w, r, urlStr, http.StatusSeeOther)
+	w, _ := c.GetResponse(), c.GetRequest()
+	//http.Redirect(w, r, urlStr, http.StatusSeeOther)
+	w.Header().Set("Location", urlStr)
+    	w.WriteHeader(http.StatusSeeOther)
 	return
 }
 
