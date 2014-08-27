@@ -1,0 +1,4 @@
+package dogo
+
+func main() {
+}
