@@ -12,7 +12,11 @@ import (
 
 type Controller struct {
 	Context     *Context
-	Dispatcher  *Dispatcher
+
+	ModuleName     string
+	ControllerName string
+	ActionName     string
+
 	Layouts     []string
 	DisableView bool
 	Data        map[string]interface{}
@@ -23,10 +27,10 @@ type Controller struct {
 }
 
 //@override on controller construct
-func (c *Controller) Construct() {
-	d := c.GetDispatcher()
+func (c *Controller) Construct(module, controller, action string) {
+	c.ModuleName, c.ControllerName, c.ActionName = module, controller, action
 	c.ViewPath = "src/views"
-	c.Tpl = fmt.Sprintf("%s/%s/%s", d.Module, d.Controller, strings.ToLower(d.Action))
+	c.Tpl = fmt.Sprintf("%s/%s/%s", c.ModuleName, c.ControllerName, strings.ToLower(c.ActionName))
 	c.TplExt = "html"
 	return
 }
@@ -157,6 +161,7 @@ func (c *Controller) GetInput(field string) string {
 func (c *Controller) Redirect(urlStr string, params map[string]string) {
 	w, _ := c.GetResponse(), c.GetRequest()
 	//http.Redirect(w, r, urlStr, http.StatusSeeOther)
+	fmt.Println(urlStr)
 	w.Header().Set("Location", urlStr)
     	w.WriteHeader(http.StatusSeeOther)
 	return
@@ -192,16 +197,6 @@ func (c *Controller) DelCookie(name string) *Controller {
 func (c *Controller) SetContext(w http.ResponseWriter, r *http.Request) *Controller {
 	c.Context = NewContext(w, r)
 	return c
-}
-
-//set current dispatcher
-func (c *Controller) SetDispatcher(d *Dispatcher) {
-	c.Dispatcher = d
-}
-
-//get current dispatcher
-func (c *Controller) GetDispatcher() *Dispatcher {
-	return c.Dispatcher
 }
 
 //get http ResponseWriter handler

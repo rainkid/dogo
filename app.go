@@ -13,6 +13,7 @@ var (
 )
 
 type App struct {
+	Environ string
 	Dispatcher *Dispatcher
 	Config     *Config
 	BasePath   string
@@ -29,6 +30,9 @@ func NewApp(file string) *App {
 
 //app bootstrap
 func (app *App) Bootstrap(router *Router) *App {
+	environ, _ := app.Config.String("base", "environ")
+	app.Environ = environ
+
 	app.Dispatcher = NewDispatcher(app, router)
 	return app
 }
@@ -41,7 +45,7 @@ func (app *App) Run() {
 
 //listen server port
 func (app *App) Listen() {
-	port, err := app.Config.Int(app.Dispatcher.Environ, "port")
+	port, err := app.Config.Int(app.Environ, "port")
 
 	addr := fmt.Sprintf(":%d", port)
 	Loger.Print("ListerAndServ ", addr)

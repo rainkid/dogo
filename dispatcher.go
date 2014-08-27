@@ -7,18 +7,16 @@ import (
 	"strings"
 )
 
+var cache = make(map[string]*SampleRoute)
+
 type Dispatcher struct {
 	App        *App
 	Router     *Router
-	Module     string
-	Controller string
-	Action     string
-	Environ    string
+	module     string
+	controller string
+	action     string
 
-	Response http.ResponseWriter
-	Request  *http.Request
-
-	Found     bool
+	found     bool
 	DefModule string
 }
 
@@ -29,46 +27,42 @@ func NewDispatcher(app *App, router *Router) *Dispatcher {
 
 //on dispatcher init 
 func (d *Dispatcher) Init() *Dispatcher {
-	d.Environ = "product"
-	d.Module = "Index"
-	d.Controller = "Index"
-	d.Action = "Index"
-
-	environ, _ := d.App.Config.String("base", "environ")
-	d.Environ = environ
+	d.module = "Index"
+	d.controller = "Index"
+	d.action = "Index"
 	return d
 }
 
 //serveHTTP
 func (d *Dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	d.Found, d.Response, d.Request = false, w, r
-	d.Static()
-	if d.Found == false {
-		d.RouteRegex()
+	d.found = false
+	d.Static(w, r)
+	if d.found == false {
+		d.RouteRegex(w, r)
 	}
-	if d.Found == false {
-		d.RouteSample()
+	if d.found == false {
+		d.RouteSample(w, r)
 	}
-	if d.Found == false {
+	if d.found == false {
 		http.NotFound(w, r)
 	}
 	return
 }
 
 // route a static route
-func (d *Dispatcher) Static() {
+func (d *Dispatcher) Static(w http.ResponseWriter, r *http.Request) {
 	for prefix, staticDir := range d.Router.StaticRoutes {
-		if strings.HasPrefix(d.Request.URL.Path, prefix) {
-			file := staticDir + d.Request.URL.Path[len(prefix):]
-			http.ServeFile(d.Response, d.Request, file)
-			d.Found = true
+		if strings.HasPrefix(r.URL.Path, prefix) {
+			file := staticDir + r.URL.Path[len(prefix):]
+			http.ServeFile(w, r, file)
+			d.found = true
 		}
 	}
 }
 
 // routed an regex route
-func (d *Dispatcher) RouteRegex() {
-	path := d.Request.URL.Path
+func (d *Dispatcher) RouteRegex(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
 
 	if length := len(d.Router.RegexRoutes); length == 0 {
 		return
@@ -84,18 +78,18 @@ func (d *Dispatcher) RouteRegex() {
 			if len(matches[0]) == len(path) {
 				if len(route.params) > 0 {
 					//add url parameters to the query param map
-					values := d.Request.URL.Query()
+					values := r.URL.Query()
 					for i, match := range matches[1:] {
 						values.Add(route.params[i], match)
 					}
 
 					//reassemble query params and add to RawQuery
-					d.Request.URL.RawQuery = url.Values(values).Encode() + "&" + d.Request.URL.RawQuery
+					r.URL.RawQuery = url.Values(values).Encode() + "&" + r.URL.RawQuery
 				}
 
 				parts := strings.Split(route.forward, "/")
-				d.Module, d.Controller, d.Action = parts[1], parts[2], Util_UCFirst(parts[3])
-				d.Match()
+				d.module, d.controller, d.action = parts[1], parts[2], Util_UCFirst(parts[3])
+				d.Match(w, r)
 				break
 			}
 		}
@@ -104,55 +98,58 @@ func (d *Dispatcher) RouteRegex() {
 }
 
 //route a map route
-func (d *Dispatcher) RouteSample() {
-	path := d.Request.URL.Path
+func (d *Dispatcher) RouteSample(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
 
 	//get request path
 	parts := strings.Split(path, "/")
 	length := len(parts)
 	//get module, controller, action
 	if length == 4 {
-		d.Module = strings.ToLower(parts[1])
-		d.Controller = strings.ToLower(parts[2])
-		d.Action = Util_UCFirst(strings.ToLower(parts[3]))
+		d.module = strings.ToLower(parts[1])
+		d.controller = strings.ToLower(parts[2])
+		d.action = Util_UCFirst(strings.ToLower(parts[3]))
 	}
 	if length < 4 && d.DefModule != "" {
-		d.Module = d.DefModule
+		d.module = d.DefModule
 
-		d.Controller = strings.ToLower(parts[1])
+		d.controller = strings.ToLower(parts[1])
 		if length == 3 {
-			d.Action = Util_UCFirst(strings.ToLower(parts[2]))
+			d.action = Util_UCFirst(strings.ToLower(parts[2]))
 		}
-		d.Request.URL.Path = strings.ToLower(fmt.Sprintf("/%s/%s/%s", d.Module, d.Controller, d.Action))
+		r.URL.Path = strings.ToLower(fmt.Sprintf("/%s/%s/%s", d.module, d.controller, d.action))
 	}
-	d.Match()
+	d.Match(w, r)
 }
 
-func (d *Dispatcher) Match() {
+func (d *Dispatcher) Match(w http.ResponseWriter, r *http.Request) {
 	var sampleRoute *SampleRoute
 	// find maproute
 	for _, value := range d.Router.SampleRoutes {
-		if value.module == d.Module && value.name == d.Controller {
-			sampleRoute, d.Found = value, true
+		if value.module == d.module && value.name == d.controller {
+			sampleRoute, d.found = value, true
 			break
 		}
 	}
 
-	if d.Found {
-		rv := sampleRoute.NewController()
-		//set context and dispatcher
-		sampleRoute.CallFunc(rv, "SetContext", d.Response, d.Request)
-		sampleRoute.CallFunc(rv, "SetDispatcher", d)
-		//the controller contruct can not overwrite
-		sampleRoute.CallFunc(rv, "Construct")
-
-		//functions can overwrite
-		sampleRoute.CallFunc(rv, "Init")
-		sampleRoute.CallFunc(rv, d.Action)
-		sampleRoute.CallFunc(rv, "Render")
-		//on the controller destruct
-		sampleRoute.CallFunc(rv, "Destruct")
+	if d.found {
+		d.Exec(sampleRoute, w, r)
 	}
+}
+
+func (d *Dispatcher) Exec(sampleRoute *SampleRoute, w http.ResponseWriter, r *http.Request) {
+	rv := sampleRoute.NewController()
+	//set context and dispatcher
+	sampleRoute.CallFunc(rv, "SetContext", w, r)
+	//the controller contruct can not overwrite
+	sampleRoute.CallFunc(rv, "Construct", d.module, d.controller, d.action)
+
+	//functions can overwrite
+	sampleRoute.CallFunc(rv, "Init")
+	sampleRoute.CallFunc(rv,  d.action)
+	sampleRoute.CallFunc(rv, "Render")
+	//on the controller destruct
+	sampleRoute.CallFunc(rv, "Destruct")
 }
 
 func (d *Dispatcher) SetDefaultModule(name string) *Dispatcher {
