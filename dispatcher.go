@@ -36,7 +36,7 @@ func (d *Dispatcher) Init() *Dispatcher {
 //serveHTTP
 func (d *Dispatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	d.found = false
-	d.Static(w, r)
+	// d.Static(w, r)
 	if d.found == false {
 		d.RouteRegex(w, r)
 	}

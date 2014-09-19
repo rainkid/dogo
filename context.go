@@ -22,7 +22,7 @@ func (ctxt *Context) GetRequest() *http.Request {
 }
 
 func (ctxt *Context) SetHeader(hdr, value string) {
-	ctxt.Request.Header.Set(hdr, value)
+	ctxt.ResponseWriter.Header().Set(hdr, value)
 	return
 }
 
