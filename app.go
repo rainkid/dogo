@@ -13,7 +13,7 @@ var (
 )
 
 type App struct {
-	Environ string
+	Environ    string
 	Dispatcher *Dispatcher
 	Config     *Config
 	BasePath   string
@@ -48,7 +48,7 @@ func (app *App) Listen() {
 	port, err := app.Config.Int(app.Environ, "port")
 
 	addr := fmt.Sprintf(":%d", port)
-	Loger.Print("ListerAndServ ", addr)
+	Loger.Print("Server started with", addr)
 	err = http.ListenAndServe(addr, nil)
 	if err != nil {
 		Loger.Fatal("<ListenAndServe> error : ", err.Error())
