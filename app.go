@@ -2,13 +2,12 @@ package dogo
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 )
 
 var (
-	Loger    = log.New(os.Stdout, "[dogo] ", log.Ldate|log.Ltime)
+	Loger    = NewLoger()
 	Register = NewRegister()
 )
 
@@ -22,7 +21,7 @@ type App struct {
 func NewApp(file string) *App {
 	config, err := NewConfig(file)
 	if err != nil {
-		Loger.Fatal(err.Error())
+		Loger.E(err.Error())
 	}
 	basepath, _ := os.Getwd()
 	return &App{Config: config, BasePath: basepath}
@@ -48,10 +47,10 @@ func (app *App) Listen() {
 	port, err := app.Config.Int(app.Environ, "port")
 
 	addr := fmt.Sprintf(":%d", port)
-	Loger.Print("Server started with", addr)
+	Loger.E("Server started with", addr)
 	err = http.ListenAndServe(addr, nil)
 	if err != nil {
-		Loger.Fatal("<ListenAndServe> error : ", err.Error())
+		Loger.E("Server started with error : ", err.Error())
 	}
 }
 

@@ -25,19 +25,19 @@ func NewConfig(fileName string) (c *Config, err error) {
 
 	var file *os.File
 	if file, err = os.Open(fileName); err != nil {
-		Loger.Print(err.Error())
+		Loger.E(err.Error())
 		return nil, err
 	}
 
 	c = &Config{fileName, make(map[string]map[string]string)}
 
 	if err = c.read(bufio.NewReader(file)); err != nil {
-		Loger.Print(err.Error())
+		Loger.E(err.Error())
 		return nil, err
 	}
 
 	if err = file.Close(); err != nil {
-		Loger.Print(err.Error())
+		Loger.E(err.Error())
 		return nil, err
 	}
 
