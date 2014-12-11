@@ -47,7 +47,7 @@ func (app *App) Listen() {
 	port, err := app.Config.Int(app.Environ, "port")
 
 	addr := fmt.Sprintf(":%d", port)
-	Loger.E("Server started with", addr)
+	Loger.I("Server started with", addr)
 	err = http.ListenAndServe(addr, nil)
 	if err != nil {
 		Loger.E("Server started with error : ", err.Error())

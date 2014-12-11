@@ -36,11 +36,16 @@ func (l *MyLoger) E(infos ...interface{}) {
 	l.P()
 }
 
+func (l *MyLoger) W(infos ...interface{}) {
+	l.infoType = "WARN"
+	l.Infos = infos
+	l.P()
+}
+
 func (l *MyLoger) P() {
 	var s string
 	for _, v := range l.Infos {
 		s += fmt.Sprintf("%v ", v)
 	}
-	l.Handler.SetPrefix(fmt.Sprintf("%s - ", l.infoType))
-	l.Handler.Println(fmt.Sprintf(` "%s"`, s))
+	l.Handler.Println(fmt.Sprintf(`DOGO - %s - "%s"`, l.infoType, s))
 }
