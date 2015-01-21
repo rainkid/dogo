@@ -1,18 +1,18 @@
 package dogo
 
 type register struct {
-	data map[string]string
+	data map[string]interface{}
 }
 
 func NewRegister() *register {
-	return &register{data: make(map[string]string)}
+	return &register{data: make(map[string]interface{})}
 }
 
-func (r *register) Set(name, value string) {
+func (r *register) Set(name string, value interface{}) {
 	r.data[name] = value
 }
 
-func (r *register) Get(name string) string {
+func (r *register) Get(name string) interface{} {
 	return r.data[name]
 }
 
