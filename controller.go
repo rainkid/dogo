@@ -11,7 +11,7 @@ import (
 )
 
 type Controller struct {
-	Context     *Context
+	Context *Context
 
 	ModuleName     string
 	ControllerName string
@@ -161,9 +161,8 @@ func (c *Controller) GetInput(field string) string {
 func (c *Controller) Redirect(urlStr string, params map[string]string) {
 	w, _ := c.GetResponse(), c.GetRequest()
 	//http.Redirect(w, r, urlStr, http.StatusSeeOther)
-	fmt.Println(urlStr)
 	w.Header().Set("Location", urlStr)
-    	w.WriteHeader(http.StatusSeeOther)
+	w.WriteHeader(http.StatusSeeOther)
 	return
 }
 
