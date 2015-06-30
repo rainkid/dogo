@@ -3,7 +3,6 @@ package dogo
 import (
 	"fmt"
 	"net/http"
-	"os"
 )
 
 var (
@@ -12,26 +11,20 @@ var (
 )
 
 type App struct {
-	Environ    string
 	Dispatcher *Dispatcher
-	Config     *Config
-	BasePath   string
+	Host string
+	Port string
 }
 
-func NewApp(file string) *App {
-	config, err := NewConfig(file)
-	if err != nil {
-		Loger.E(err.Error())
+func NewApp(host, port string) *App {
+	if len(host) == 0 || len(port) == 0{
+		Loger.E("start with host or port is nil")
 	}
-	basepath, _ := os.Getwd()
-	return &App{Config: config, BasePath: basepath}
+	return &App{Host:host, Port:port}
 }
 
 //app bootstrap
 func (app *App) Bootstrap(router *Router) *App {
-	environ, _ := app.Config.String("base", "environ")
-	app.Environ = environ
-
 	app.Dispatcher = NewDispatcher(app, router)
 	return app
 }
@@ -44,11 +37,10 @@ func (app *App) Run() {
 
 //listen server port
 func (app *App) Listen() {
-	port, err := app.Config.Int(app.Environ, "port")
 
-	addr := fmt.Sprintf(":%d", port)
+	addr := fmt.Sprintf("%s:%s", app.Host, app.Port)
 	Loger.I("Server started with", addr)
-	err = http.ListenAndServe(addr, nil)
+	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		Loger.E("Server started with error : ", err.Error())
 	}
