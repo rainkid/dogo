@@ -14,7 +14,7 @@ type MyLoger struct {
 
 func NewLoger() *MyLoger {
 	return &MyLoger{
-		Handler: log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Handler: log.New(os.Stdout, "[", log.Ldate|log.Ltime),
 	}
 }
 
@@ -47,5 +47,5 @@ func (l *MyLoger) P() {
 	for _, v := range l.Infos {
 		s += fmt.Sprintf("%v ", v)
 	}
-	l.Handler.Println(fmt.Sprintf(`DOGO - %s - "%s"`, l.infoType, s))
+	l.Handler.Println(fmt.Sprintf(`] [%s] - "%s"`, l.infoType, s))
 }

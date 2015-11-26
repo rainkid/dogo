@@ -25,7 +25,7 @@ func NewDispatcher(app *App, router *Router) *Dispatcher {
 	return d.Init()
 }
 
-//on dispatcher init 
+//on dispatcher init
 func (d *Dispatcher) Init() *Dispatcher {
 	d.module = "Index"
 	d.controller = "Index"
@@ -146,7 +146,7 @@ func (d *Dispatcher) Exec(sampleRoute *SampleRoute, w http.ResponseWriter, r *ht
 
 	//functions can overwrite
 	sampleRoute.CallFunc(rv, "Init")
-	sampleRoute.CallFunc(rv,  d.action)
+	sampleRoute.CallFunc(rv, d.action)
 	sampleRoute.CallFunc(rv, "Render")
 	//on the controller destruct
 	sampleRoute.CallFunc(rv, "Destruct")
