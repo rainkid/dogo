@@ -7,9 +7,7 @@ import (
 )
 
 type MyLoger struct {
-	infoType string
-	Handler  *log.Logger
-	Infos    []interface{}
+	Handler *log.Logger
 }
 
 func NewLoger() *MyLoger {
@@ -19,33 +17,25 @@ func NewLoger() *MyLoger {
 }
 
 func (l *MyLoger) D(infos ...interface{}) {
-	l.infoType = "DEBUG"
-	l.Infos = infos
-	l.P()
+	l.output("DEBUG", infos)
 }
 
 func (l *MyLoger) I(infos ...interface{}) {
-	l.infoType = "INFO"
-	l.Infos = infos
-	l.P()
+	l.output("INFOS", infos)
 }
 
 func (l *MyLoger) E(infos ...interface{}) {
-	l.infoType = "ERROR"
-	l.Infos = infos
-	l.P()
+	l.output("ERROR", infos)
 }
 
 func (l *MyLoger) W(infos ...interface{}) {
-	l.infoType = "WARN"
-	l.Infos = infos
-	l.P()
+	l.output("WARNG", infos)
 }
 
-func (l *MyLoger) P() {
+func (l *MyLoger) output(tag string, infos ...interface{}) {
 	var s string
-	for _, v := range l.Infos {
-		s += fmt.Sprintf("%v ", v)
+	for _, v := range infos {
+		s += fmt.Sprintf("%v", v)
 	}
-	l.Handler.Println(fmt.Sprintf(`] [%s] - "%s"`, l.infoType, s))
+	l.Handler.Println(fmt.Sprintf(`] [%s] - "%s"`, tag, s))
 }
