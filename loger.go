@@ -12,7 +12,7 @@ type MyLoger struct {
 
 func NewLoger() *MyLoger {
 	return &MyLoger{
-		Handler: log.New(os.Stdout, "[", log.Ldate|log.Ltime),
+		Handler: log.New(os.Stdout, "", log.Ldate|log.Ltime),
 	}
 }
 
@@ -32,10 +32,10 @@ func (l *MyLoger) W(infos ...interface{}) {
 	l.output("WARNG", infos)
 }
 
-func (l *MyLoger) output(tag string, infos ...interface{}) {
-	var s string
+func (l *MyLoger) output(tag string, infos []interface{}) {
+	str := ""
 	for _, v := range infos {
-		s += fmt.Sprintf("%v", v)
+		str += fmt.Sprintf("%v", v)
 	}
-	l.Handler.Println(fmt.Sprintf(`] [%s] - "%s"`, tag, s))
+	l.Handler.Println(fmt.Sprintf(` [%s] - "%s"`, tag, str))
 }
