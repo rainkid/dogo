@@ -21,7 +21,7 @@ func (l *MyLoger) D(infos ...interface{}) {
 }
 
 func (l *MyLoger) I(infos ...interface{}) {
-	l.output("INFOS", infos)
+	l.output("INFO ", infos)
 }
 
 func (l *MyLoger) E(infos ...interface{}) {
@@ -35,7 +35,7 @@ func (l *MyLoger) W(infos ...interface{}) {
 func (l *MyLoger) output(tag string, infos []interface{}) {
 	str := ""
 	for _, v := range infos {
-		str += fmt.Sprintf("%v", v)
+		str += fmt.Sprintf(" %v", v)
 	}
 	l.Handler.Println(fmt.Sprintf(` [%s] - "%s"`, tag, str))
 }
