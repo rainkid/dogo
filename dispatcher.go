@@ -108,18 +108,27 @@ func (d *Dispatcher) RouteSample(w http.ResponseWriter, r *http.Request) {
 	if length == 4 {
 		d.module = strings.ToLower(parts[1])
 		d.controller = strings.ToLower(parts[2])
-		d.action = Util_UCFirst(strings.ToLower(parts[3]))
+		d.action = d.getAction(strings.ToLower(parts[3]))
 	}
 	if length < 4 && d.DefModule != "" {
 		d.module = d.DefModule
 
 		d.controller = strings.ToLower(parts[1])
 		if length == 3 {
-			d.action = Util_UCFirst(strings.ToLower(parts[2]))
+			d.action = d.getAction(strings.ToLower(parts[2]))
 		}
 		r.URL.Path = strings.ToLower(fmt.Sprintf("/%s/%s/%s", d.module, d.controller, d.action))
 	}
 	d.Match(w, r)
+}
+
+func (d *Dispatcher) getAction(action string) string {
+	acts := strings.Split(action, "_")
+	var fmt_acts []string
+	for _, str := range acts {
+		fmt_acts = append(fmt_acts, Util_UCFirst(str))
+	}
+	return strings.Join(fmt_acts, "_")
 }
 
 func (d *Dispatcher) Match(w http.ResponseWriter, r *http.Request) {
