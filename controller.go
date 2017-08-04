@@ -27,7 +27,7 @@ type Controller struct {
 }
 
 //@override on controller construct
-func (c *Controller) Construct(module, controller, action string) {
+func (c *Controller) BeferAction(module, controller, action string) {
 	c.ModuleName, c.ControllerName, c.ActionName = module, controller, action
 	c.ViewPath = "src/views"
 	c.Tpl = fmt.Sprintf("%s/%s/%s", c.ModuleName, c.ControllerName, strings.ToLower(c.ActionName))
@@ -36,7 +36,7 @@ func (c *Controller) Construct(module, controller, action string) {
 }
 
 //@override on controller destruct
-func (c *Controller) Destruct() {
+func (c *Controller) AfterAction() {
 	return
 }
 

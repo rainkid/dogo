@@ -151,14 +151,14 @@ func (d *Dispatcher) Exec(sampleRoute *SampleRoute, w http.ResponseWriter, r *ht
 	//set context and dispatcher
 	sampleRoute.CallFunc(rv, "SetContext", w, r)
 	//the controller contruct can not overwrite
-	sampleRoute.CallFunc(rv, "Construct", d.module, d.controller, d.action)
+	sampleRoute.CallFunc(rv, "BeferAction", d.module, d.controller, d.action)
 
 	//functions can overwrite
 	sampleRoute.CallFunc(rv, "Init")
 	sampleRoute.CallFunc(rv, d.action)
 	sampleRoute.CallFunc(rv, "Render")
 	//on the controller destruct
-	sampleRoute.CallFunc(rv, "Destruct")
+	sampleRoute.CallFunc(rv, "AfterAction")
 }
 
 func (d *Dispatcher) SetDefaultModule(name string) *Dispatcher {
