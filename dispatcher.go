@@ -148,6 +148,7 @@ func (d *Dispatcher) Match(w http.ResponseWriter, r *http.Request) {
 
 func (d *Dispatcher) Exec(sampleRoute *SampleRoute, w http.ResponseWriter, r *http.Request) {
 	rv := sampleRoute.NewController()
+
 	//set context and dispatcher
 	sampleRoute.CallFunc(rv, "SetContext", w, r)
 	//the controller contruct can not overwrite
@@ -155,6 +156,7 @@ func (d *Dispatcher) Exec(sampleRoute *SampleRoute, w http.ResponseWriter, r *ht
 
 	//functions can overwrite
 	sampleRoute.CallFunc(rv, "Init")
+
 	sampleRoute.CallFunc(rv, d.action)
 	sampleRoute.CallFunc(rv, "Render")
 	//on the controller destruct

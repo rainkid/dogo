@@ -4,28 +4,20 @@ import (
 	"net/http"
 )
 
-type Context struct {
+type Context struct { 
+	Input 		   *Input
+	Output 		   *Output
 	ResponseWriter http.ResponseWriter
 	Request        *http.Request
 }
 
-func NewContext(w http.ResponseWriter, r *http.Request) *Context {
-	return &Context{ResponseWriter: w, Request: r}
+func (ctx *Context) Init(rw http.ResponseWriter, r *http.Request) {
+	ctx.ResponseWriter = rw
+	ctx.Request = r
+	ctx.Input = &Input{Context:ctx}
+	ctx.Output = &Output{Context:ctx, Started:false}
 }
 
-func (ctxt *Context) GetResponse() http.ResponseWriter {
-	return ctxt.ResponseWriter
-}
-
-func (ctxt *Context) GetRequest() *http.Request {
-	return ctxt.Request
-}
-
-func (ctxt *Context) SetHeader(hdr, value string) {
-	ctxt.ResponseWriter.Header().Set(hdr, value)
-	return
-}
-
-func (ctxt *Context) GetHeader(hdr string) string {
-	return ctxt.Request.Header.Get(hdr)
+func (ctx *Context) Redirect(status int, localurl string) {
+	http.Redirect(ctx.ResponseWriter, ctx.Request, localurl, status)
 }

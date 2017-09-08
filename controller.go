@@ -1,7 +1,6 @@
 package dogo
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -42,12 +41,12 @@ func (c *Controller) AfterAction() {
 
 //is get request
 func (c *Controller) IsAjax() bool {
-	return c.Context.GetHeader("X-Requested-With") == "XMLHttpRequest"
+	return c.Context.Input.IsAjax()
 }
 
 //is post request
 func (c *Controller) IsPost() bool {
-	return c.GetRequest().Method == "POST"
+	return c.Context.Input.IsPost()
 }
 
 //Assign value to View engine
@@ -69,26 +68,9 @@ func (c *Controller) Layout(file string) bool {
 	return false
 }
 
-//output json string
-func (c *Controller) Json(code int64, msg string, data interface{}) {
-	c.DisableView = true
-	c.Context.SetHeader("Content-Type", "json")
-	jsonStr, err := json.Marshal(map[string]interface{}{
-		"code": code,
-		"msg":  msg,
-		"data": data,
-	})
-	if err != nil {
-		c.GetResponse().Write([]byte("json.Marshal faild."))
-	}
-	c.GetResponse().Write(jsonStr)
-	return
-}
-
 //Render view template
 func (c *Controller) Render() {
 	if c.DisableView != true {
-		w := c.GetResponse()
 		tpl := fmt.Sprintf("%s.%s", c.Tpl, c.TplExt)
 
 		if !c.Layout(tpl) {
@@ -100,7 +82,7 @@ func (c *Controller) Render() {
 			c.Error(err)
 			return
 		}
-		err = t.Execute(w, c.Data)
+		err = t.Execute(c.Context.ResponseWriter, c.Data)
 		if err != nil {
 			c.Error(err)
 			return
@@ -112,7 +94,7 @@ func (c *Controller) Render() {
 //display error on reponse
 func (c *Controller) Error(err error) {
 	if err != nil {
-		http.Error(c.GetResponse(), err.Error(), http.StatusInternalServerError)
+		http.Error(c.Context.ResponseWriter, err.Error(), http.StatusInternalServerError)
 	}
 	return
 }
@@ -128,19 +110,19 @@ func (c *Controller) GetPosts(fields []string) map[string]string {
 
 //get an post param
 func (c *Controller) GetPost(field string) string {
-	return c.GetRequest().PostFormValue(field)
+	return c.Context.Request.PostFormValue(field)
 }
 
 //get post array string
 func (c *Controller) GetPostList(field string) []string {
-	c.GetRequest().ParseForm()
-	return c.GetRequest().PostForm[field]
+	c.Context.Request.ParseForm()
+	return c.Context.Request.PostForm[field]
 }
 
 //get post params
 func (c *Controller) GetInputs(fields []string) map[string]string {
 	values := make(map[string]string)
-	c.GetRequest().ParseForm()
+	c.Context.Request.ParseForm()
 
 	for _, field := range fields {
 		values[field] = c.GetInput(field)
@@ -149,20 +131,17 @@ func (c *Controller) GetInputs(fields []string) map[string]string {
 }
 
 func (c *Controller) GetInputList(field string) []string {
-	c.GetRequest().ParseForm()
-	return c.GetRequest().Form[field]
+	c.Context.Request.ParseForm()
+	return c.Context.Request.Form[field]
 }
 
 func (c *Controller) GetInput(field string) string {
-	return c.GetRequest().FormValue(field)
+	return c.Context.Request.FormValue(field)
 }
 
 //redirct to url
-func (c *Controller) Redirect(urlStr string, params map[string]string) {
-	w, _ := c.GetResponse(), c.GetRequest()
-	//http.Redirect(w, r, urlStr, http.StatusSeeOther)
-	w.Header().Set("Location", urlStr)
-	w.WriteHeader(http.StatusSeeOther)
+func (c *Controller) Redirect(status int, redirect string) {
+	c.Context.Redirect(status, redirect)
 	return
 }
 
@@ -170,13 +149,13 @@ func (c *Controller) Redirect(urlStr string, params map[string]string) {
 func (c *Controller) SetCookie(name string, value string, expire time.Duration) *Controller {
 	expires := time.Now().Add(time.Second * expire)
 	cookie := &http.Cookie{Name: name, Value: value, Path: "/", Expires: expires}
-	http.SetCookie(c.GetResponse(), cookie)
+	http.SetCookie(c.Context.ResponseWriter, cookie)
 	return c
 }
 
 //get cookie by name
-func (c *Controller) GetCookie(name string) string {
-	cookie, err := c.GetRequest().Cookie(name)
+func (c *Controller) Cookie(name string) string {
+	cookie, err := c.Context.Request.Cookie(name)
 	if err != nil {
 		return ""
 	}
@@ -187,23 +166,14 @@ func (c *Controller) GetCookie(name string) string {
 func (c *Controller) DelCookie(name string) *Controller {
 	expires := time.Now().Add(-1)
 	cookie := &http.Cookie{Name: name, Value: "value", Path: "/", Expires: expires}
-	http.SetCookie(c.GetResponse(), cookie)
+	http.SetCookie(c.Context.ResponseWriter, cookie)
 	return c
 }
 
 //set contorller context
 //this action will call by dispatcher
-func (c *Controller) SetContext(w http.ResponseWriter, r *http.Request) *Controller {
-	c.Context = NewContext(w, r)
+func (c *Controller) SetContext(rw http.ResponseWriter, r *http.Request) *Controller {
+	c.Context = &Context{}
+	c.Context.Init(rw, r)
 	return c
-}
-
-//get http ResponseWriter handler
-func (c *Controller) GetResponse() http.ResponseWriter {
-	return c.Context.ResponseWriter
-}
-
-//get http Request handler
-func (c Controller) GetRequest() *http.Request {
-	return c.Context.Request
 }
